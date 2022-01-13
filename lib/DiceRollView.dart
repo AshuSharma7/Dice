@@ -33,6 +33,30 @@ class _DiceRollViewState extends State<DiceRollView>
 
   AudioCache _audioCache;
 
+  rollDice() async {
+    n = Random().nextInt(6) + 1;
+    if (n == 6) {
+      n = Random().nextInt(6) + 1;
+      if (n == 6) {
+        n = Random().nextInt(6) + 1;
+      }
+    } else if (n == 5 || n == 4) {
+      n = Random().nextInt(6) + 1;
+    }
+    _audioCache.play('roll.mp3');
+    print(n);
+    var temp = Random().nextInt(360);
+    roll = Tween<Vector3>(begin: lastRoll, end: Vector3.all(temp + 0.0))
+        .animate(CurvedAnimation(parent: controller, curve: Curves.linear));
+    controller.reset();
+    await controller.forward();
+    roll = Tween<Vector3>(begin: Vector3.all(temp + 0.0), end: _diceRolls[n])
+        .animate(CurvedAnimation(parent: controller, curve: Curves.easeIn));
+    lastRoll = _diceRolls[n];
+    controller.reset();
+    controller.forward();
+  }
+
   @override
   void initState() {
     controller =
@@ -48,91 +72,59 @@ class _DiceRollViewState extends State<DiceRollView>
       prefix: 'assets/audio/',
       fixedPlayer: AudioPlayer()..setReleaseMode(ReleaseMode.STOP),
     );
+    Future.delayed(Duration(milliseconds: 1500), rollDice);
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => DiceRollViewModel(),
-      child: Consumer<DiceRollViewModel>(
-        builder: (context, model, widget) {
-          return Scaffold(
-              backgroundColor: Color(0xFF233254),
-              body: Column(
-                children: <Widget>[
-                  SizedBox(
-                    height: 40.0,
-                  ),
-                  Spacer(),
-                  Container(
-                    height: 500,
-                    width: 500,
-                    child: Cube(
-                      onSceneCreated: (Scene scene) {
-                        scene.world.add(dice);
-                      },
-                    ),
-                  ),
-                  Spacer(),
-                  if (controller.isCompleted)
-                    Text(
-                      "You got $n",
-                      style: TextStyle(color: Colors.white, fontSize: 25.0),
-                    ),
-                  Spacer(),
-                  GestureDetector(
-                    onTap: () async {
-                      n = Random().nextInt(6) + 1;
-                      if (n == 6) {
-                        n = Random().nextInt(6) + 1;
-                        if (n == 6) {
-                          n = Random().nextInt(6) + 1;
-                        }
-                      } else if (n == 5 || n == 4) {
-                        n = Random().nextInt(6) + 1;
-                      }
-                      _audioCache.play('roll.mp3');
-                      print(n);
-                      var temp = Random().nextInt(360);
-                      roll = Tween<Vector3>(
-                              begin: lastRoll, end: Vector3.all(temp + 0.0))
-                          .animate(CurvedAnimation(
-                              parent: controller, curve: Curves.linear));
-                      controller.reset();
-                      await controller.forward();
-                      roll = Tween<Vector3>(
-                              begin: Vector3.all(temp + 0.0),
-                              end: _diceRolls[n])
-                          .animate(CurvedAnimation(
-                              parent: controller, curve: Curves.easeIn));
-                      lastRoll = _diceRolls[n];
-                      controller.reset();
-                      controller.forward();
-                    },
-                    child: Container(
-                      margin: EdgeInsets.all(20.0),
-                      height: 70,
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(
-                          boxShadow: [BoxShadow(color: Color(0xFF))],
-                          color: Color(0xFF2a4262),
-                          borderRadius: BorderRadius.circular(20.0)),
-                      child: Center(
-                        child: Text(
-                          'Roll Dice',
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.white30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ));
-        },
-      ),
-    );
+    return Scaffold(
+        backgroundColor: Colors.yellow[800].withOpacity(0.3),
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            SizedBox(
+              height: 40.0,
+            ),
+            Container(
+              height: 400,
+              width: 500,
+              child: Cube(
+                onSceneCreated: (Scene scene) {
+                  scene.world.add(dice);
+                },
+              ),
+            ),
+            SizedBox(
+              height: 40.0,
+            ),
+            if (controller.isCompleted)
+              Text(
+                "You got $n",
+                style: TextStyle(color: Colors.white, fontSize: 25.0),
+              ),
+            // GestureDetector(`
+            //   onTap:
+            //   child: Container(
+            //     margin: EdgeInsets.all(20.0),
+            //     height: 70,
+            //     width: MediaQuery.of(context).size.width,
+            //     decoration: BoxDecoration(
+            //         boxShadow: [BoxShadow(color: Color(0xFF))],
+            //         color: Color(0xFF2a4262),
+            //         borderRadius: BorderRadius.circular(20.0)),
+            //     child: Center(
+            //       child: Text(
+            //         'Roll Dice',
+            //         style: TextStyle(
+            //           fontSize: 20,
+            //           color: Colors.white30,
+            //           fontWeight: FontWeight.bold,
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // )
+          ],
+        ));
   }
 }
